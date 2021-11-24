@@ -1,4 +1,5 @@
-import { apiKey, cardanoUrl } from "../../config";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../../firebase";
 import { fromHex, toString } from "../../utils";
 
 /**
@@ -149,21 +150,7 @@ export const getProtocolParameters = async () => {
 };
 
 const cardano = async (endpoint, headers, body) => {
-  return await request(cardanoUrl, endpoint, headers, body);
-};
-
-const request = async (base, endpoint, headers, body) => {
-  return await fetch(base + endpoint, {
-    headers: {
-      project_id: apiKey,
-      ...headers,
-    },
-    method: body ? "POST" : "GET",
-    body,
-  }).then((response) => {
-    if (!response.ok) {
-      throw response;
-    }
-    return response.json();
-  });
+  const blockfrostApi = httpsCallable(functions, "blockfrost");
+  const result = await blockfrostApi({ endpoint, headers, body });
+  return result.data;
 };
